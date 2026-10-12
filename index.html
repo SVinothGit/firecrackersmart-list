@@ -361,6 +361,28 @@ button { font: inherit; color: inherit; cursor: pointer; }
     width: 100%;
     box-sizing: border-box;
   }
+  
+}
+
+.footer {
+  margin-top: 25px;
+  padding: 20px 15px;
+  text-align: center;
+  background: #180b25;
+  color: #e5d8e8;
+  border-radius: 12px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.footer p {
+  margin: 4px 0;
+}
+
+.footer-note {
+  color: #ffd875;
+  font-weight: 600;
 }
 </style>
 </head>
@@ -746,5 +768,10 @@ document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !d
 })();
 renderList(); renderBar();
 </script>
+  
+<footer class="footer">
+  <p>© 2026 Fire Crackers Mart</p>
+  <p class="footer-note">✨ Celebrate More · Save More ✨</p>
+</footer>
 </body>
 </html>

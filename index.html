@@ -23,6 +23,7 @@
   --gold: #f2b01e;
   --gold-ink: #3a2400;
   --shadow: rgba(60, 20, 10, .18);
+  --wa: #168a45; --wa-ink: #ffffff;
   --f-display: "Yatra One", "Noto Sans Tamil", Georgia, serif;
   --f-body: "Mukta", "Noto Sans Tamil", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-tamil: "Noto Sans Tamil", "Mukta", system-ui, sans-serif;
@@ -31,13 +32,13 @@
   :root:not([data-theme="light"]) {
     --bg: #1a0f0c; --surface: #251712; --ink: #f6e9e2; --muted: #b99f95; --line: #3b2822;
     --soft: #2e1b15; --accent: #ff6b4a; --accent-ink: #1a0f0c; --gold: #f2b01e; --gold-ink: #3a2400;
-    --shadow: rgba(0, 0, 0, .55); color-scheme: dark;
+    --shadow: rgba(0, 0, 0, .55); --wa: #34c76f; --wa-ink: #0b2415; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #1a0f0c; --surface: #251712; --ink: #f6e9e2; --muted: #b99f95; --line: #3b2822;
   --soft: #2e1b15; --accent: #ff6b4a; --accent-ink: #1a0f0c; --gold: #f2b01e; --gold-ink: #3a2400;
-  --shadow: rgba(0, 0, 0, .55); color-scheme: dark;
+  --shadow: rgba(0, 0, 0, .55); --wa: #34c76f; --wa-ink: #0b2415; color-scheme: dark;
 }
 html { color-scheme: light; }
 body { margin: 0; }
@@ -120,7 +121,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .tot .save { color: var(--accent); }
 .acts { display: grid; gap: 8px; margin-top: 16px; }
 .pdf { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 14px; font-weight: 700; font-size: 1.05rem; }
-.pdf[disabled] { opacity: .45; cursor: not-allowed; }
+.pdf[disabled], .wa[disabled] { opacity: .45; cursor: not-allowed; }
+.wa { background: var(--wa); color: var(--wa-ink); border: 0; border-radius: 10px; padding: 14px; font-weight: 700; font-size: 1.05rem; }
+.hint { margin: 0; color: var(--muted); font-size: .85rem; }
 .clr { background: transparent; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; color: var(--muted); }
 .msg { min-height: 1.4em; margin: 8px 0 0; font-size: .9rem; color: var(--muted); }
 @media (prefers-reduced-motion: no-preference) { .sheet { animation: up .18s ease-out; } @keyframes up { from { transform: translateY(24px); opacity: .6; } } }
@@ -162,6 +165,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
       </div>
       <div class="tot" id="tot"></div>
       <div class="acts">
+        <button class="wa" id="waBtn" type="button" data-act="wa">Send order on WhatsApp</button>
+        <p class="hint">Enter your name and phone above first. On a phone, choose WhatsApp in the share list and send it to us.</p>
         <button class="pdf" id="pdfBtn" type="button" data-act="pdf">Download invoice PDF</button>
         <button class="clr" type="button" data-act="clear">Clear cart</button>
       </div>
@@ -171,6 +176,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 </div>
 
 <script src="prices.js"></script>
+<script src="config.js"></script>
 <script>
 const SHOP = { name: "ANNA LAKSHMI PYRO PARK", agency: "Thiruselvi Agencies", addr: "Sivakasi Main Road, Kakkivadanpatti", prop: "Prop: M. Muthukrishnan" };
 
@@ -317,6 +323,7 @@ function renderCart(focusSel) {
       '<div class="net"><span>Net payable</span><span>Rs. ' + fmt(t.net) + '</span></div>'
     : "";
   document.getElementById("pdfBtn").disabled = !lines.length;
+  document.getElementById("waBtn").disabled = !lines.length;
   if (focusSel) { const f = box.querySelector(focusSel); if (f) f.focus(); }
 }
 
@@ -354,6 +361,58 @@ async function downloadInvoice() {
   }
 }
 
+function invoiceMeta() {
+  const d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
+  return {
+    no: "AL-" + String(d.getFullYear()).slice(2) + p(d.getMonth() + 1) + p(d.getDate()) + "-" + p(d.getHours()) + p(d.getMinutes()),
+    date: p(d.getDate()) + "-" + p(d.getMonth() + 1) + "-" + d.getFullYear()
+  };
+}
+function orderText(lines, tot, cust, meta) {
+  const head = ["*New order - " + SHOP.name + "*", "Invoice: " + meta.no, "Name: " + (cust.name || "-"), "Phone: " + (cust.phone || "-")];
+  if (cust.addr) head.push("Address: " + cust.addr);
+  head.push("");
+  const foot = ["", "List total: Rs. " + fmt(tot.list), "Discount (50%): Rs. " + fmt(tot.save), "*Net payable: Rs. " + fmt(tot.net) + "*"];
+  const budget = 1400 - head.join("\n").length - foot.join("\n").length;
+  const rows = []; let used = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    const r = (i + 1) + ". " + l.name + " x " + l.qty + " " + l.unit + " = Rs. " + fmt(l.amt);
+    if (used + r.length + 1 > budget) break;
+    rows.push(r); used += r.length + 1;
+  }
+  if (rows.length < lines.length) rows.push("... and " + (lines.length - rows.length) + " more items (see the invoice PDF)");
+  return head.concat(rows, foot).join("\n");
+}
+function shopNumber() { return (typeof SHOP_WHATSAPP === "string" ? SHOP_WHATSAPP : "").replace(/\D/g, ""); }
+async function sendWhatsApp() {
+  const lines = cartLines(cart, items);
+  if (!lines.length) return;
+  const cust = { name: document.getElementById("cName").value.trim(), phone: document.getElementById("cPhone").value.trim(), addr: document.getElementById("cAddr").value.trim() };
+  if (!cust.name || !cust.phone) { say("Please enter your name and phone number first."); return; }
+  const JsPDF = window.jspdf && window.jspdf.jsPDF;
+  if (!JsPDF) { say("The PDF tool did not load. Check your connection and reload the page."); return; }
+  const meta = invoiceMeta(), tot = cartTotals(lines), fname = "Invoice-" + meta.no + ".pdf";
+  let doc, file;
+  try {
+    doc = buildInvoice(JsPDF, lines, cust, tot, meta, SHOP, fmt);
+    file = new File([doc.output("blob")], fname, { type: "application/pdf" });
+  } catch (e) { say("Could not create the invoice. Please try again."); return; }
+  const text = orderText(lines, tot, cust, meta), num = shopNumber();
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], text: text });
+      say("Shared. In WhatsApp, make sure it went to " + (num ? "+" + num : "our shop number") + ".");
+    } catch (e) {
+      say(e && e.name === "AbortError" ? "Sharing cancelled." : "Sharing did not work. Use Download invoice PDF and send it on WhatsApp.");
+    }
+    return;
+  }
+  doc.save(fname);
+  window.open("https://wa.me/" + num + "?text=" + encodeURIComponent(text), "_blank");
+  say("Invoice downloaded. Attach it in the WhatsApp chat that just opened, then send.");
+}
+
 document.addEventListener("click", function (e) {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const a = b.dataset.act, id = b.dataset.id;
@@ -364,6 +423,7 @@ document.addEventListener("click", function (e) {
   else if (a === "close") closeCart();
   else if (a === "clear") { cart = {}; persist(); renderList(); renderBar(); renderCart(); say("Cart cleared."); }
   else if (a === "pdf") downloadInvoice();
+  else if (a === "wa") sendWhatsApp();
 });
 document.addEventListener("change", function (e) { const t = e.target; if (t.matches && t.matches("input.q")) setQty(t.dataset.id, t.value); });
 document.getElementById("veil").addEventListener("click", function (e) { if (e.target === this) closeCart(); });

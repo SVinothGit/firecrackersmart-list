@@ -526,11 +526,11 @@ function buildInvoice(JsPDF, lines, cust, tot, meta, shop, money) {
   doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text(shop.name, M, 13);
   doc.setFont("helvetica", "normal"); doc.setFontSize(10);
   doc.text(shop.agency, M, 19.5); doc.text(shop.addr, M, 25);
-  doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.text("INVOICE", W - M, 14, { align: "right" });
+  doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.text("ESTIMATION", W - M, 14, { align: "right" });
   doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text(shop.prop, W - M, 21, { align: "right" });
 
   doc.setTextColor(40, 24, 18); doc.setFontSize(10);
-  doc.setFont("helvetica", "bold"); doc.text("Invoice no.", M, 42); doc.text("Date", M, 48);
+  doc.setFont("helvetica", "bold"); doc.text("ESTIMATION no.", M, 42); doc.text("Date", M, 48);
   doc.setFont("helvetica", "normal"); doc.text(meta.no, M + 24, 42); doc.text(meta.date, M + 24, 48);
   doc.setFont("helvetica", "bold"); doc.text("Bill to", 110, 42);
   doc.setFont("helvetica", "normal");

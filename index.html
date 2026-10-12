@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Lakshmi Pyro Park</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Mukta:wght@400;600;700&family=Noto+Sans+Tamil:wght@500;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<style>
+/* Layout: one narrow column like a printed rate card. Red masthead, category bands that stick while scrolling, quantity controls on the right of each row, cart as a bottom sheet. */
+:root {
+  --bg: #fffbf9;
+  --surface: #ffffff;
+  --ink: #2b1712;
+  --muted: #7a625a;
+  --line: #ecdcd3;
+  --soft: #fdeee6;
+  --accent: #b3200f;
+  --accent-ink: #ffffff;
+  --gold: #f2b01e;
+  --gold-ink: #3a2400;
+  --shadow: rgba(60, 20, 10, .18);
+  --f-display: "Yatra One", "Noto Sans Tamil", Georgia, serif;
+  --f-body: "Mukta", "Noto Sans Tamil", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-tamil: "Noto Sans Tamil", "Mukta", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a0f0c; --surface: #251712; --ink: #f6e9e2; --muted: #b99f95; --line: #3b2822;
+    --soft: #2e1b15; --accent: #ff6b4a; --accent-ink: #1a0f0c; --gold: #f2b01e; --gold-ink: #3a2400;
+    --shadow: rgba(0, 0, 0, .55); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a0f0c; --surface: #251712; --ink: #f6e9e2; --muted: #b99f95; --line: #3b2822;
+  --soft: #2e1b15; --accent: #ff6b4a; --accent-ink: #1a0f0c; --gold: #f2b01e; --gold-ink: #3a2400;
+  --shadow: rgba(0, 0, 0, .55); color-scheme: dark;
+}
+html { color-scheme: light; }
+body { margin: 0; }
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.4; }
+.wrap { max-width: 760px; margin-inline: auto; padding-inline: 16px; padding-block: 0 110px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* masthead */
+.mast { background: var(--accent); color: var(--accent-ink); margin-inline: -16px; padding: 22px 16px 20px; display: grid; gap: 6px; }
+.kicker { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; opacity: .9; }
+.mast h1 { font: 800 clamp(1.5rem, 6.4vw, 2.3rem)/1.25 var(--f-tamil); margin: 0; text-wrap: balance; }
+.mast .agency { font: 500 clamp(1.1rem, 4.6vw, 1.5rem)/1.3 var(--f-tamil); margin: 0; }
+.mast .addr { font-family: var(--f-tamil); font-size: .95rem; margin: 2px 0 0; }
+.mast .en { font-size: .85rem; opacity: .9; margin: 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.tag { background: var(--gold); color: var(--gold-ink); font-weight: 700; padding: 4px 12px; border-radius: 999px; font-size: .9rem; }
+.tag.alt { background: transparent; color: inherit; box-shadow: inset 0 0 0 1.5px currentColor; font-weight: 600; }
+
+.legend { margin: 16px 0 6px; color: var(--muted); font-size: .9rem; }
+.legend b { color: var(--ink); }
+
+/* list */
+.cat { margin-block-start: 14px; }
+.cat h2 {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; margin: 0;
+  font: 400 1.05rem/1.2 var(--f-display); letter-spacing: .02em; text-transform: uppercase;
+  background: var(--soft); color: var(--accent); padding: 9px 12px; border-block: 1px solid var(--line);
+}
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: grid; grid-template-columns: 2.1rem minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 10px 4px; border-bottom: 1px solid var(--line); }
+.no { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; text-align: right; }
+.nm { font-weight: 600; overflow-wrap: anywhere; }
+.pr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-variant-numeric: tabular-nums; }
+.pr s { color: var(--muted); font-size: .88rem; }
+.pr b { color: var(--accent); font-size: 1.05rem; }
+.pr .un { color: var(--muted); font-size: .85rem; }
+.ctl { display: flex; align-items: center; gap: 6px; justify-self: end; }
+.add { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 8px 18px; font-weight: 700; min-height: 40px; }
+.na { color: var(--muted); font-size: .85rem; }
+.step { display: inline-flex; align-items: center; border: 1.5px solid var(--accent); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.step button { background: transparent; border: 0; width: 38px; height: 38px; font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+.step button:active { background: var(--soft); }
+.step input { width: 3rem; height: 38px; border: 0; border-inline: 1px solid var(--line); text-align: center; font: inherit; font-weight: 700; background: var(--surface); color: var(--ink); -moz-appearance: textfield; appearance: textfield; }
+.step input::-webkit-outer-spin-button, .step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.note { margin-block: 22px 0; color: var(--muted); font-size: .9rem; }
+
+/* sticky cart bar */
+.bar { position: fixed; inset-inline: 0; bottom: 0; z-index: 5; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); box-shadow: 0 -6px 20px var(--shadow); }
+.bar-in { max-width: 760px; margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bar-sum { font-variant-numeric: tabular-nums; min-width: 0; }
+.bar-sum small { display: block; opacity: .8; }
+.bar-sum strong { font-size: 1.15rem; }
+.bar .go { background: var(--gold); color: var(--gold-ink); border: 0; border-radius: 8px; padding: 10px 18px; font-weight: 700; white-space: nowrap; }
+
+/* cart sheet */
+.veil { position: fixed; inset: 0; z-index: 10; background: rgba(20, 8, 4, .55); display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--bg); color: var(--ink); width: 100%; max-width: 760px; max-height: 92%; border-radius: 16px 16px 0 0; display: flex; flex-direction: column; box-shadow: 0 -10px 40px var(--shadow); }
+.sheet-h { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.sheet-h h2 { margin: 0; font: 400 1.25rem/1.2 var(--f-display); color: var(--accent); }
+.x { background: transparent; border: 1.5px solid var(--line); border-radius: 8px; width: 38px; height: 38px; font-size: 1.1rem; }
+.sheet-b { overflow-y: auto; padding: 4px 16px 16px; overscroll-behavior: contain; }
+.line { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: center; }
+.line .nm { grid-column: 1; }
+.line .calc { grid-column: 1; color: var(--muted); font-size: .88rem; font-variant-numeric: tabular-nums; }
+.line .amt { grid-column: 2; grid-row: 1; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.line .ctl { grid-column: 2; grid-row: 2; }
+.rm { background: transparent; border: 0; color: var(--muted); text-decoration: underline; font-size: .85rem; padding: 6px; }
+.empty { padding: 28px 0; text-align: center; color: var(--muted); }
+.cust { display: grid; gap: 10px; margin-block: 16px 4px; }
+.cust label { display: grid; gap: 4px; font-size: .85rem; color: var(--muted); }
+.cust input, .cust textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; padding: 9px 10px; width: 100%; }
+.cust textarea { resize: vertical; min-height: 64px; }
+.tot { margin-block: 14px 0; display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
+.tot div { display: flex; justify-content: space-between; gap: 12px; }
+.tot .net { font-size: 1.2rem; font-weight: 700; border-top: 2px solid var(--ink); padding-top: 8px; margin-top: 4px; }
+.tot .save { color: var(--accent); }
+.acts { display: grid; gap: 8px; margin-top: 16px; }
+.pdf { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 14px; font-weight: 700; font-size: 1.05rem; }
+.pdf[disabled] { opacity: .45; cursor: not-allowed; }
+.clr { background: transparent; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; color: var(--muted); }
+.msg { min-height: 1.4em; margin: 8px 0 0; font-size: .9rem; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .sheet { animation: up .18s ease-out; } @keyframes up { from { transform: translateY(24px); opacity: .6; } } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="mast">
+    <span class="kicker">Pricelist 2026</span>
+    <h1>அன்னலட்சுமி பைரோ பார்க்</h1>
+    <p class="agency">திருசெல்வி ஏஜென்ஸிஸ்</p>
+    <p class="addr">சிவகாசி மெயின் ரோடு, காக்கிவாடன்பட்டி.</p>
+    <p class="en">Anna Lakshmi Pyro Park &middot; Thiruselvi Agencies &middot; Prop: M. Muthukrishnan</p>
+    <div class="tags"><span class="tag">50% off every rate</span><span class="tag alt">Direct company sales</span></div>
+  </header>
+
+  <p class="legend">Prices are per <b>Pkt</b>, <b>Box</b> or <b>Pcs</b> as shown. Struck-through is the list rate; the bold figure is your price at 50% off.</p>
+  <main id="list"></main>
+  <p class="note">Lorry freight and packing charges are extra. Thanks for your visit, come again.</p>
+</div>
+
+<div class="bar" id="bar" hidden>
+  <div class="bar-in">
+    <div class="bar-sum"><small id="barCount"></small><strong id="barTotal"></strong></div>
+    <button class="go" type="button" data-act="open">View cart</button>
+  </div>
+</div>
+
+<div class="veil" id="veil" hidden>
+  <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="sheet-h"><h2 id="cartTitle">Your cart</h2><button class="x" type="button" data-act="close" aria-label="Close cart" id="closeBtn">&#10005;</button></div>
+    <div class="sheet-b">
+      <div id="lines"></div>
+      <div class="cust">
+        <label for="cName">Customer name<input id="cName" type="text" autocomplete="name"></label>
+        <label for="cPhone">Phone<input id="cPhone" type="tel" inputmode="tel" autocomplete="tel"></label>
+        <label for="cAddr">Address<textarea id="cAddr" autocomplete="street-address"></textarea></label>
+      </div>
+      <div class="tot" id="tot"></div>
+      <div class="acts">
+        <button class="pdf" id="pdfBtn" type="button" data-act="pdf">Download invoice PDF</button>
+        <button class="clr" type="button" data-act="clear">Clear cart</button>
+      </div>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+</div>
+
+<script src="prices.js"></script>
+<script>
+const SHOP = { name: "ANNA LAKSHMI PYRO PARK", agency: "Thiruselvi Agencies", addr: "Sivakasi Main Road, Kakkivadanpatti", prop: "Prop: M. Muthukrishnan" };
+
+const items = {};
+DATA.forEach(function (g) { g.items.forEach(function (i) { items[i.id] = i; }); });
+
+function fmt(n) { return Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function r2(n) { return Math.round(n * 100) / 100; }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+let cart = {};
+try { const s = localStorage.getItem("alpp-cart"); if (s) cart = JSON.parse(s) || {}; } catch (e) { cart = {}; }
+Object.keys(cart).forEach(function (k) { if (!items[k] || !(cart[k] > 0)) delete cart[k]; });
+function persist() { try { localStorage.setItem("alpp-cart", JSON.stringify(cart)); } catch (e) {} }
+
+/*BI-START*/
+function cartLines(cartObj, itemMap) {
+  return Object.keys(cartObj).map(function (id) {
+    const it = itemMap[id], q = cartObj[id];
+    return { id: id, n: it.n, name: it.name, unit: it.unit, rate: it.rate, disc: it.disc, qty: q, list: r2(q * it.rate), amt: r2(q * it.disc) };
+  }).sort(function (a, b) { return a.n - b.n; });
+}
+function cartTotals(lines) {
+  let list = 0, net = 0, count = 0;
+  lines.forEach(function (l) { list += l.list; net += l.amt; count += l.qty; });
+  list = r2(list); net = r2(net);
+  return { list: list, net: net, save: r2(list - net), count: count, kinds: lines.length };
+}
+function buildInvoice(JsPDF, lines, cust, tot, meta, shop, money) {
+  const doc = new JsPDF({ unit: "mm", format: "a4" });
+  const W = 210, M = 14;
+  doc.setFillColor(179, 32, 15); doc.rect(0, 0, W, 32, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text(shop.name, M, 13);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  doc.text(shop.agency, M, 19.5); doc.text(shop.addr, M, 25);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.text("INVOICE", W - M, 14, { align: "right" });
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text(shop.prop, W - M, 21, { align: "right" });
+
+  doc.setTextColor(40, 24, 18); doc.setFontSize(10);
+  doc.setFont("helvetica", "bold"); doc.text("Invoice no.", M, 42); doc.text("Date", M, 48);
+  doc.setFont("helvetica", "normal"); doc.text(meta.no, M + 24, 42); doc.text(meta.date, M + 24, 48);
+  doc.setFont("helvetica", "bold"); doc.text("Bill to", 110, 42);
+  doc.setFont("helvetica", "normal");
+  const billTo = [cust.name || "Customer"];
+  if (cust.phone) billTo.push("Ph: " + cust.phone);
+  if (cust.addr) billTo.push.apply(billTo, doc.splitTextToSize(cust.addr, W - M - 110));
+  doc.text(billTo, 110, 48);
+  const startY = Math.max(62, 48 + billTo.length * 5 + 6);
+
+  doc.autoTable({
+    startY: startY,
+    margin: { left: M, right: M, bottom: 20 },
+    head: [["#", "Item", "Qty", "Unit", "List rate", "Your rate", "Amount"]],
+    body: lines.map(function (l, i) { return [String(i + 1), l.name, String(l.qty), l.unit, money(l.rate), money(l.disc), money(l.amt)]; }),
+    theme: "grid",
+    styles: { font: "helvetica", fontSize: 9, cellPadding: 2, textColor: [40, 24, 18], lineColor: [226, 208, 198], lineWidth: 0.2 },
+    headStyles: { fillColor: [179, 32, 15], textColor: [255, 255, 255], halign: "center" },
+    columnStyles: { 0: { halign: "center", cellWidth: 9 }, 2: { halign: "center", cellWidth: 14 }, 3: { halign: "center", cellWidth: 20 }, 4: { halign: "right", cellWidth: 26 }, 5: { halign: "right", cellWidth: 26 }, 6: { halign: "right", cellWidth: 28 } }
+  });
+
+  let y = doc.lastAutoTable.finalY + 8;
+  if (y > 250) { doc.addPage(); y = 20; }
+  const rx = W - M, lx = 120;
+  doc.setFontSize(10); doc.setFont("helvetica", "normal");
+  doc.text("Total at list rate", lx, y); doc.text("Rs. " + money(tot.list), rx, y, { align: "right" });
+  y += 6;
+  doc.text("Discount (50%)", lx, y); doc.text("- Rs. " + money(tot.save), rx, y, { align: "right" });
+  y += 3; doc.setDrawColor(40, 24, 18); doc.setLineWidth(0.4); doc.line(lx, y, rx, y);
+  y += 6.5; doc.setFont("helvetica", "bold"); doc.setFontSize(12);
+  doc.text("Net payable", lx, y); doc.text("Rs. " + money(tot.net), rx, y, { align: "right" });
+  y += 12; doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(110, 90, 80);
+  doc.text("Lorry freight and packing charges are extra.", M, y);
+  doc.text("Thanks for your visit, come again.", M, y + 5);
+
+  const pages = doc.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p); doc.setFontSize(8); doc.setTextColor(140, 120, 110);
+    doc.text(shop.name + "  |  Page " + p + " of " + pages, W / 2, 289, { align: "center" });
+  }
+  return doc;
+}
+/*BI-END*/
+
+function totalsNow() { return cartTotals(cartLines(cart, items)); }
+
+function ctlHTML(id) {
+  const it = items[id];
+  if (it.rate === null) return '<span class="na">Ask for price</span>';
+  const q = cart[id] || 0;
+  if (!q) return '<button class="add" type="button" data-act="add" data-id="' + id + '">Add</button>';
+  return '<span class="step"><button type="button" data-act="dec" data-id="' + id + '" aria-label="Fewer ' + esc(it.name) + '">&minus;</button>' +
+    '<input class="q" type="number" min="0" max="999" inputmode="numeric" value="' + q + '" data-id="' + id + '" aria-label="Quantity of ' + esc(it.name) + '">' +
+    '<button type="button" data-act="inc" data-id="' + id + '" aria-label="More ' + esc(it.name) + '">+</button></span>';
+}
+
+function renderList() {
+  const out = [];
+  DATA.forEach(function (g) {
+    out.push('<section class="cat"><h2>' + esc(g.cat) + '</h2><ul class="rows">');
+    g.items.forEach(function (it) {
+      const price = it.rate === null
+        ? '<span class="un">Price on request</span>'
+        : '<s>' + fmt(it.rate) + '</s><b>' + fmt(it.disc) + '</b><span class="un">per ' + esc(it.unit) + '</span>';
+      out.push('<li class="row" id="r-' + it.id + '"><span class="no">' + it.n + '</span>' +
+        '<div class="info"><div class="nm">' + esc(it.name) + '</div><div class="pr">' + price + '</div></div>' +
+        '<div class="ctl">' + ctlHTML(it.id) + '</div></li>');
+    });
+    out.push('</ul></section>');
+  });
+  document.getElementById("list").innerHTML = out.join("");
+}
+
+function updateRow(id) {
+  const row = document.getElementById("r-" + id); if (!row) return;
+  const ctl = row.querySelector(".ctl");
+  const hadFocus = ctl.contains(document.activeElement);
+  ctl.innerHTML = ctlHTML(id);
+  if (hadFocus) { const b = ctl.querySelector('[data-act="inc"]') || ctl.querySelector('[data-act="add"]'); if (b) b.focus(); }
+}
+
+function renderBar() {
+  const t = totalsNow(), bar = document.getElementById("bar");
+  bar.hidden = t.kinds === 0;
+  document.getElementById("barCount").textContent = t.kinds + (t.kinds === 1 ? " item" : " items") + " in cart";
+  document.getElementById("barTotal").textContent = "Rs. " + fmt(t.net);
+}
+
+function renderCart(focusSel) {
+  const lines = cartLines(cart, items), t = cartTotals(lines);
+  const box = document.getElementById("lines");
+  if (!lines.length) {
+    box.innerHTML = '<div class="empty">Your cart is empty. Close this and tap Add on any item.</div>';
+  } else {
+    box.innerHTML = lines.map(function (l) {
+      return '<div class="line"><div class="nm">' + esc(l.name) + '</div><div class="amt">' + fmt(l.amt) + '</div>' +
+        '<div class="calc">' + l.qty + ' &times; ' + fmt(l.disc) + ' per ' + esc(l.unit) + '</div>' +
+        '<div class="ctl">' + ctlHTML(l.id) + '<button class="rm" type="button" data-act="remove" data-id="' + l.id + '">Remove</button></div></div>';
+    }).join("");
+  }
+  document.getElementById("tot").innerHTML = lines.length
+    ? '<div><span>Total at list rate</span><span>Rs. ' + fmt(t.list) + '</span></div>' +
+      '<div class="save"><span>Discount (50%)</span><span>- Rs. ' + fmt(t.save) + '</span></div>' +
+      '<div class="net"><span>Net payable</span><span>Rs. ' + fmt(t.net) + '</span></div>'
+    : "";
+  document.getElementById("pdfBtn").disabled = !lines.length;
+  if (focusSel) { const f = box.querySelector(focusSel); if (f) f.focus(); }
+}
+
+function setQty(id, q, fromCart) {
+  q = Math.max(0, Math.min(999, Math.floor(Number(q)) || 0));
+  if (q === 0) delete cart[id]; else cart[id] = q;
+  persist(); updateRow(id); renderBar();
+  if (!document.getElementById("veil").hidden) renderCart(q ? '[data-act="inc"][data-id="' + id + '"]' : null);
+}
+
+let opener = null;
+function openCart() { opener = document.activeElement; renderCart(); document.getElementById("msg").textContent = ""; document.getElementById("veil").hidden = false; document.getElementById("closeBtn").focus(); }
+function closeCart() { document.getElementById("veil").hidden = true; if (opener && opener.focus) opener.focus(); }
+function say(t) { document.getElementById("msg").textContent = t; }
+
+async function downloadInvoice() {
+  const lines = cartLines(cart, items);
+  if (!lines.length) return;
+  const JsPDF = window.jspdf && window.jspdf.jsPDF;
+  if (!JsPDF) { say("The PDF tool did not load. Check your connection and reload the page."); return; }
+  const dl = (window.claude && window.claude.use) ? await window.claude.use("downloads") : null;
+  const d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
+  const meta = {
+    no: "AL-" + String(d.getFullYear()).slice(2) + p(d.getMonth() + 1) + p(d.getDate()) + "-" + p(d.getHours()) + p(d.getMinutes()),
+    date: p(d.getDate()) + "-" + p(d.getMonth() + 1) + "-" + d.getFullYear()
+  };
+  const cust = { name: document.getElementById("cName").value.trim(), phone: document.getElementById("cPhone").value.trim(), addr: document.getElementById("cAddr").value.trim() };
+  try {
+    const doc = buildInvoice(JsPDF, lines, cust, cartTotals(lines), meta, SHOP, fmt);
+    const fname = "Invoice-" + meta.no + ".pdf";
+    if (dl) await dl.save({ filename: fname, data: doc.output("blob") }); else doc.save(fname);
+    say("Invoice " + meta.no + " saved.");
+  } catch (e) {
+    say(e && e.code === "declined" ? "Download cancelled." : "Could not save the invoice. Please try again.");
+  }
+}
+
+document.addEventListener("click", function (e) {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act, id = b.dataset.id;
+  if (a === "add" || a === "inc") setQty(id, (cart[id] || 0) + 1);
+  else if (a === "dec") setQty(id, (cart[id] || 0) - 1);
+  else if (a === "remove") setQty(id, 0);
+  else if (a === "open") openCart();
+  else if (a === "close") closeCart();
+  else if (a === "clear") { cart = {}; persist(); renderList(); renderBar(); renderCart(); say("Cart cleared."); }
+  else if (a === "pdf") downloadInvoice();
+});
+document.addEventListener("change", function (e) { const t = e.target; if (t.matches && t.matches("input.q")) setQty(t.dataset.id, t.value); });
+document.getElementById("veil").addEventListener("click", function (e) { if (e.target === this) closeCart(); });
+document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !document.getElementById("veil").hidden) closeCart(); });
+
+renderList(); renderBar();
+</script>
+</body>
+</html>

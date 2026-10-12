@@ -45,7 +45,7 @@ body { margin: 0; }
 [hidden] { display: none !important; }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.4; }
-.wrap { max-width: 760px; margin-inline: auto; padding-inline: 16px; padding-block: 0 110px; }
+.wrap { max-width: 1040px; margin-inline: auto; padding-inline: 16px; padding-block: 0 110px; }
 button { font: inherit; color: inherit; cursor: pointer; }
 :focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 
@@ -70,9 +70,17 @@ button { font: inherit; color: inherit; cursor: pointer; }
   font: 400 1.05rem/1.2 var(--f-display); letter-spacing: .02em; text-transform: uppercase;
   background: var(--soft); color: var(--accent); padding: 9px 12px; border-block: 1px solid var(--line);
 }
-.rows { list-style: none; margin: 0; padding: 0; }
-.row { display: grid; grid-template-columns: 2.1rem minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 10px 4px; border-bottom: 1px solid var(--line); }
-.no { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; text-align: right; }
+.rows { list-style: none; margin: 0; padding: 12px 0 4px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 10px; }
+.row { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 6px 12px; padding: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.row .thumb { grid-row: 1 / span 2; align-self: start; }
+.row .info { grid-column: 2; grid-row: 1; }
+.row .ctl { grid-column: 2; grid-row: 2; justify-self: start; }
+.thumb { width: 72px; height: 72px; border-radius: 10px; object-fit: cover; background: var(--soft); display: block; }
+.thumb.ph { display: grid; place-items: center; color: var(--muted); font: 400 1.1rem/1 var(--f-display); }
+.no { color: var(--muted); font-size: .75rem; letter-spacing: .05em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 2px; }
+.chips a { text-decoration: none; color: var(--accent); background: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: .85rem; font-weight: 600; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 .nm { font-weight: 600; overflow-wrap: anywhere; }
 .pr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-variant-numeric: tabular-nums; }
 .pr s { color: var(--muted); font-size: .88rem; }
@@ -91,7 +99,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 /* sticky cart bar */
 .bar { position: fixed; inset-inline: 0; bottom: 0; z-index: 5; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); box-shadow: 0 -6px 20px var(--shadow); }
-.bar-in { max-width: 760px; margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bar-in { max-width: 1040px; margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .bar-sum { font-variant-numeric: tabular-nums; min-width: 0; }
 .bar-sum small { display: block; opacity: .8; }
 .bar-sum strong { font-size: 1.15rem; }
@@ -134,14 +142,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
 <div class="wrap">
   <header class="mast">
     <span class="kicker">Pricelist 2026</span>
-    <h1>ANNA LAKSHMI PYRO PARK</h1>
-    <p class="agency">Thiruselvi Agencies</p>
-    <p class="addr">Sivakasi Main Road, Kakkivadanpatti.</p>
+    <h1>அன்னலட்சுமி பைரோ பார்க்</h1>
+    <p class="agency">திருசெல்வி ஏஜென்ஸிஸ்</p>
+    <p class="addr">சிவகாசி மெயின் ரோடு, காக்கிவாடன்பட்டி.</p>
     <p class="en">Anna Lakshmi Pyro Park &middot; Thiruselvi Agencies &middot; Prop: M. Muthukrishnan</p>
-    <div class="tags"><span class="tag">50% off every rate</span><span class="tag alt">Direct company sales</span></div>
+    <div class="tags"><span class="tag" id="discTag"></span><span class="tag alt">Direct company sales</span></div>
   </header>
 
-  <p class="legend">Prices are per <b>Pkt</b>, <b>Box</b> or <b>Pcs</b> as shown. Struck-through is the list rate; the bold figure is your price at 50% off.</p>
+  <p class="legend">Prices are per <b>Pkt</b>, <b>Box</b> or <b>Pcs</b> as shown. <span id="legendDisc"></span></p>
+  <nav class="chips" id="chips" aria-label="Categories"></nav>
   <main id="list"></main>
   <p class="note">Lorry freight and packing charges are extra. Thanks for your visit, come again.</p>
 </div>
@@ -180,6 +189,28 @@ button { font: inherit; color: inherit; cursor: pointer; }
 <script>
 const SHOP = { name: "ANNA LAKSHMI PYRO PARK", agency: "Thiruselvi Agencies", addr: "Sivakasi Main Road, Kakkivadanpatti", prop: "Prop: M. Muthukrishnan" };
 
+/*DATA-START*/
+const PCT = (function () {
+  const n = Number(typeof SHOP_DISCOUNT_PERCENT !== "undefined" ? SHOP_DISCOUNT_PERCENT : 0);
+  if (n >= 0 && n <= 100) return n;
+  if (window.console) console.warn("SHOP_DISCOUNT_PERCENT must be between 0 and 100. Using 0.");
+  return 0;
+})();
+const PCT_LABEL = String(Math.round(PCT * 100) / 100);
+const DATA = (function () {
+  const groups = [], byCat = {};
+  PRICES.slice().sort(function (a, b) { return a.sno - b.sno; }).forEach(function (p) {
+    if (!byCat[p.category]) { byCat[p.category] = { cat: p.category, items: [] }; groups.push(byCat[p.category]); }
+    const rate = (p.rate === null || p.rate === undefined) ? null : Number(p.rate);
+    byCat[p.category].items.push({
+      id: String(p.sno), n: p.sno, name: p.name, unit: String(p.per).replace(/^1\s+/, ""), image: p.image || null,
+      rate: rate, disc: rate === null ? null : Math.round(rate * (100 - PCT)) / 100
+    });
+  });
+  return groups;
+})();
+/*DATA-END*/
+SHOP.discLabel = "Discount (" + PCT_LABEL + "%)";
 const items = {};
 DATA.forEach(function (g) { g.items.forEach(function (i) { items[i.id] = i; }); });
 
@@ -244,8 +275,8 @@ function buildInvoice(JsPDF, lines, cust, tot, meta, shop, money) {
   doc.setFontSize(10); doc.setFont("helvetica", "normal");
   doc.text("Total at list rate", lx, y); doc.text("Rs. " + money(tot.list), rx, y, { align: "right" });
   y += 6;
-  doc.text("Discount (50%)", lx, y); doc.text("- Rs. " + money(tot.save), rx, y, { align: "right" });
-  y += 3; doc.setDrawColor(40, 24, 18); doc.setLineWidth(0.4); doc.line(lx, y, rx, y);
+  if (tot.save > 0) { doc.text(shop.discLabel, lx, y); doc.text("- Rs. " + money(tot.save), rx, y, { align: "right" }); y += 6; }
+  y += 0; doc.setDrawColor(40, 24, 18); doc.setLineWidth(0.4); doc.line(lx, y, rx, y);
   y += 6.5; doc.setFont("helvetica", "bold"); doc.setFontSize(12);
   doc.text("Net payable", lx, y); doc.text("Rs. " + money(tot.net), rx, y, { align: "right" });
   y += 12; doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(110, 90, 80);
@@ -274,20 +305,25 @@ function ctlHTML(id) {
 }
 
 function renderList() {
-  const out = [];
-  DATA.forEach(function (g) {
-    out.push('<section class="cat"><h2>' + esc(g.cat) + '</h2><ul class="rows">');
+  const out = [], chips = [];
+  DATA.forEach(function (g, gi) {
+    chips.push('<a href="#c-' + gi + '">' + esc(g.cat) + '</a>');
+    out.push('<section class="cat" id="c-' + gi + '"><h2>' + esc(g.cat) + '</h2><ul class="rows">');
     g.items.forEach(function (it) {
       const price = it.rate === null
         ? '<span class="un">Price on request</span>'
-        : '<s>' + fmt(it.rate) + '</s><b>' + fmt(it.disc) + '</b><span class="un">per ' + esc(it.unit) + '</span>';
-      out.push('<li class="row" id="r-' + it.id + '"><span class="no">' + it.n + '</span>' +
-        '<div class="info"><div class="nm">' + esc(it.name) + '</div><div class="pr">' + price + '</div></div>' +
+        : (PCT > 0 ? '<s>' + fmt(it.rate) + '</s>' : '') + '<b>' + fmt(it.disc) + '</b><span class="un">per ' + esc(it.unit) + '</span>';
+      const img = it.image
+        ? '<img class="thumb" loading="lazy" decoding="async" width="72" height="72" src="' + esc(it.image) + '" alt="' + esc(it.name) + '" data-n="' + it.n + '">'
+        : '<div class="thumb ph">' + it.n + '</div>';
+      out.push('<li class="row" id="r-' + it.id + '">' + img +
+        '<div class="info"><div class="no">No. ' + it.n + '</div><div class="nm">' + esc(it.name) + '</div><div class="pr">' + price + '</div></div>' +
         '<div class="ctl">' + ctlHTML(it.id) + '</div></li>');
     });
     out.push('</ul></section>');
   });
   document.getElementById("list").innerHTML = out.join("");
+  document.getElementById("chips").innerHTML = chips.join("");
 }
 
 function updateRow(id) {
@@ -319,7 +355,7 @@ function renderCart(focusSel) {
   }
   document.getElementById("tot").innerHTML = lines.length
     ? '<div><span>Total at list rate</span><span>Rs. ' + fmt(t.list) + '</span></div>' +
-      '<div class="save"><span>Discount (50%)</span><span>- Rs. ' + fmt(t.save) + '</span></div>' +
+      (t.save > 0 ? '<div class="save"><span>Discount (' + PCT_LABEL + '%)</span><span>- Rs. ' + fmt(t.save) + '</span></div>' : '') +
       '<div class="net"><span>Net payable</span><span>Rs. ' + fmt(t.net) + '</span></div>'
     : "";
   document.getElementById("pdfBtn").disabled = !lines.length;
@@ -372,7 +408,9 @@ function orderText(lines, tot, cust, meta) {
   const head = ["*New order - " + SHOP.name + "*", "Invoice: " + meta.no, "Name: " + (cust.name || "-"), "Phone: " + (cust.phone || "-")];
   if (cust.addr) head.push("Address: " + cust.addr);
   head.push("");
-  const foot = ["", "List total: Rs. " + fmt(tot.list), "Discount (50%): Rs. " + fmt(tot.save), "*Net payable: Rs. " + fmt(tot.net) + "*"];
+  const foot = ["", "List total: Rs. " + fmt(tot.list)];
+  if (tot.save > 0) foot.push("Discount (" + PCT_LABEL + "%): Rs. " + fmt(tot.save));
+  foot.push("*Net payable: Rs. " + fmt(tot.net) + "*");
   const budget = 1400 - head.join("\n").length - foot.join("\n").length;
   const rows = []; let used = 0;
   for (let i = 0; i < lines.length; i++) {
@@ -413,6 +451,13 @@ async function sendWhatsApp() {
   say("Invoice downloaded. Attach it in the WhatsApp chat that just opened, then send.");
 }
 
+document.addEventListener("error", function (e) {
+  const t = e.target;
+  if (t && t.tagName === "IMG" && t.classList.contains("thumb")) {
+    const d = document.createElement("div"); d.className = "thumb ph"; d.textContent = t.dataset.n || ""; t.replaceWith(d);
+  }
+}, true);
+
 document.addEventListener("click", function (e) {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const a = b.dataset.act, id = b.dataset.id;
@@ -421,7 +466,12 @@ document.addEventListener("click", function (e) {
   else if (a === "remove") setQty(id, 0);
   else if (a === "open") openCart();
   else if (a === "close") closeCart();
-  else if (a === "clear") { cart = {}; persist(); renderList(); renderBar(); renderCart(); say("Cart cleared."); }
+  else if (a === "clear") { cart = {}; persist(); (function () {
+  const tag = document.getElementById("discTag"), lg = document.getElementById("legendDisc");
+  if (PCT > 0) { tag.textContent = PCT_LABEL + "% off every rate"; lg.textContent = "Struck-through is the list rate; the bold figure is your price after " + PCT_LABEL + "% discount."; }
+  else { tag.hidden = true; lg.textContent = "The bold figure is the price."; }
+})();
+renderList(); renderBar(); renderCart(); say("Cart cleared."); }
   else if (a === "pdf") downloadInvoice();
   else if (a === "wa") sendWhatsApp();
 });
@@ -429,6 +479,11 @@ document.addEventListener("change", function (e) { const t = e.target; if (t.mat
 document.getElementById("veil").addEventListener("click", function (e) { if (e.target === this) closeCart(); });
 document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !document.getElementById("veil").hidden) closeCart(); });
 
+(function () {
+  const tag = document.getElementById("discTag"), lg = document.getElementById("legendDisc");
+  if (PCT > 0) { tag.textContent = PCT_LABEL + "% off every rate"; lg.textContent = "Struck-through is the list rate; the bold figure is your price after " + PCT_LABEL + "% discount."; }
+  else { tag.hidden = true; lg.textContent = "The bold figure is the price."; }
+})();
 renderList(); renderBar();
 </script>
 </body>

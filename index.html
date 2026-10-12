@@ -136,18 +136,278 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .msg { min-height: 1.4em; margin: 8px 0 0; font-size: .9rem; color: var(--muted); }
 @media (prefers-reduced-motion: no-preference) { .sheet { animation: up .18s ease-out; } @keyframes up { from { transform: translateY(24px); opacity: .6; } } }
 </style>
+  <style>
+.mast {
+  --gold: #ffd875;
+  position: relative;
+  overflow: hidden;
+  padding: 22px 20px 26px;
+  border: 1px solid rgba(255, 215, 117, .4);
+  border-radius: 22px;
+  color: #fff8e9;
+  text-align: center;
+  font-family: "Poppins", Arial, sans-serif;
+  background:
+    radial-gradient(circle at 12% 18%,
+      rgba(255, 190, 65, .22), transparent 25%),
+    radial-gradient(circle at 88% 30%,
+      rgba(255, 70, 70, .2), transparent 28%),
+    linear-gradient(145deg, #180b25 0%, #351027 48%, #130a20 100%);
+  box-shadow: 0 12px 35px rgba(30, 5, 25, .24);
+}
+
+.mast::before,
+.mast::after {
+  content: "✦  ·  ✧  ·  ✦";
+  position: absolute;
+  color: rgba(255, 216, 117, .35);
+  font-size: 22px;
+  letter-spacing: 9px;
+  pointer-events: none;
+}
+
+.mast::before {
+  top: 65px;
+  left: -10px;
+  transform: rotate(-18deg);
+}
+
+.mast::after {
+  right: -12px;
+  bottom: 100px;
+  transform: rotate(18deg);
+}
+
+.mast-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.kicker {
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.season {
+  padding: 5px 9px;
+  border: 1px solid rgba(255, 216, 117, .35);
+  border-radius: 30px;
+  color: #ffe9b0;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.mast-content {
+  position: relative;
+  z-index: 1;
+  max-width: 650px;
+  margin: 24px auto 0;
+}
+
+.brand-icon {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 15px;
+  border: 1px solid rgba(255, 216, 117, .55);
+  border-radius: 50%;
+  background: rgba(255, 216, 117, .09);
+  font-size: 32px;
+}
+
+.mast h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(27px, 5vw, 43px);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: 1.5px;
+}
+
+.mast h1 span {
+  color: var(--gold);
+}
+
+.brand-line {
+  width: 74px;
+  height: 3px;
+  margin: 18px auto 12px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #ff9c38, #ffe8a0);
+}
+
+.agency {
+  margin: 0;
+  color: #ffdca0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.addr {
+  margin: 12px 0 22px;
+  color: #e5d8e8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.tags {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.tag {
+  padding: 9px 14px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ffe7a0, #ffb94d);
+  color: #461521;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .6px;
+}
+
+.tag strong {
+  font-size: 21px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.tag.alt {
+  border: 1px solid rgba(255, 216, 117, .45);
+  background: rgba(255, 255, 255, .06);
+  color: #fff0c6;
+}
+
+.contact-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.contact-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 145px;
+  padding: 13px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  transition: transform .2s, filter .2s;
+}
+
+.contact-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.call {
+  background: #fff5e3;
+  color: #321128;
+}
+
+.whatsapp {
+  background: #20bd69;
+  color: #fff;
+}
+
+.footer-note {
+  margin: 22px 0 0;
+  color: #d9bcd0;
+  font-size: 11px;
+  letter-spacing: 1.3px;
+}
+
+@media (max-width: 480px) {
+  .mast {
+    padding: 17px 13px 22px;
+    border-radius: 16px;
+  }
+
+  .mast-top {
+    justify-content: center;
+  }
+
+  .mast-content {
+    margin-top: 20px;
+  }
+
+  .agency {
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .addr {
+    font-size: 12px;
+  }
+
+  .contact-actions {
+    flex-direction: column;
+  }
+
+  .contact-btn {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+</style>
 </head>
 <body>
 
 <div class="wrap">
   <header class="mast">
-    <span class="kicker">Pricelist 2026</span>
-    <h1>ANNA LAKSHMI PYRO PARK</h1>
-    <p class="agency">Thiruselvi Agencies</p>
-    <p class="addr">Sivakasi Main Road, Kakkivadanpatti.</p>
-    <p class="en"><a href="tel:+91 9524648501">📞 Call / Whatsapp</a>+91 9524648501</p>
-    <div class="tags"><span class="tag" id="discTag"></span><span class="tag alt">Direct company sales</span></div>
-  </header>
+  <div class="mast-top">
+    <span class="kicker">✦ OFFICIAL PRICE LIST 2026 ✦</span>
+    <span class="season">FESTIVE COLLECTION</span>
+  </div>
+
+  <div class="mast-content">
+    <div class="brand-icon">🎆</div>
+
+    <h1>ANNA LAKSHMI<br /><span>PYRO PARK</span></h1>
+
+    <div class="brand-line"></div>
+    <p class="agency">THIRUSELVI AGENCIES</p>
+    <p class="addr">📍 Sivakasi Main Road, Kakkivadanpatti</p>
+
+    <div class="tags">
+      <span class="tag" id="discTag">
+        <strong>60%</strong> OFF EVERY RATE
+      </span>
+      <span class="tag alt">✓ DIRECT COMPANY SALES</span>
+    </div>
+
+    <div class="contact-actions">
+      <a class="contact-btn call" href="tel:+91999999999">
+        ☎ Call Us
+      </a>
+      <a
+        class="contact-btn whatsapp"
+        href="https://wa.me/91999999999"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        WhatsApp Us ↗
+      </a>
+    </div>
+
+    <p class="footer-note">
+      ✨ Celebrate More · Save More ✨
+    </p>
+  </div>
+</header>
 
   <p class="legend">Prices are per <b>Pkt</b>, <b>Box</b> or <b>Pcs</b> as shown. <span id="legendDisc"></span></p>
   <nav class="chips" id="chips" aria-label="Categories"></nav>

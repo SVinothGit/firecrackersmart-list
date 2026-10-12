@@ -543,7 +543,7 @@ function buildInvoice(JsPDF, lines, cust, tot, meta, shop, money) {
   doc.autoTable({
     startY: startY,
     margin: { left: M, right: M, bottom: 20 },
-    head: [["#", "Item", "Qty", "Unit", "List rate", "Your rate", "Amount"]],
+    head: [["#", "Item", "Qty", "Unit", "Rate", "Discounted rate", "Amount"]],
     body: lines.map(function (l, i) { return [String(i + 1), l.name, String(l.qty), l.unit, money(l.rate), money(l.disc), money(l.amt)]; }),
     theme: "grid",
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2, textColor: [40, 24, 18], lineColor: [226, 208, 198], lineWidth: 0.2 },
